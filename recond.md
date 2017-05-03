@@ -22,3 +22,8 @@ https://github.com/nsqio/nsq/releases
 --------------WEB服务器-----------------
 https://caddyserver.com/features
 https://github.com/mholt/caddy/
+
+--------------Linux/Unix-----------------
+https://github.com/VVictorQi/APUE
+
+UNIX环境高级编程 APUE
