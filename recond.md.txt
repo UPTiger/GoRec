@@ -15,9 +15,11 @@ https://zhuanlan.zhihu.com/p/25493806
 https://github.com/nsqio/nsq.git
 https://github.com/nsqio/nsq/releases
 
+一款不一样的缓存组件
+https://github.com/golang/groupcache
 
---------------前后端架构-----------------
-https://github.com/DennisMao/blog-go
+--------------消息队列-----------------
+
 
 --------------WEB服务器-----------------
 https://caddyserver.com/features
@@ -26,10 +28,12 @@ https://github.com/mholt/caddy/
 ----------------TOOLS---------------------
 使用 Elastic Stack 来监控和调优 Golang 应用程序 
 https://my.oschina.net/u/569210/blog/852351
+https://github.com/elastic/beats/tree/master/metricbeat/module/golang
+
 
 
 -----------------微服务------------------
-基于 Go Kit?的微服务示例 
+基于GO Kit的微服务示例
 http://gokit.io/examples/stringsvc.html
 
 --------------Linux/Unix-----------------
