@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bufio"
+	"encoding/binary"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"os"
@@ -36,11 +39,10 @@ func proxyClientHandle(oneProxy *ProxyStruct) {
 		}
 		buffUsed = 0
 
-
 	}
 
 }
-func proxyConnectConnB(oneProxy *ProxyStruct){
+func proxyConnectConnB(oneProxy *ProxyStruct) {
 	fmt.Println("proxyClientHandle start a connet to server!")
 	server, err := net.Dial("tcp", "58.61.154.247:7018")
 	if err != nil {
@@ -79,11 +81,10 @@ func proxyHandleConn(client net.Conn) {
 			return
 		}
 		log.Println("recv data, len:", len)
-		if len > 0{
+		if len > 0 {
 			oneProxy.ConnB.Write(buff)
 			oneProxy.LastRecvTime = uint32(time.Now().Unix())
 		}
-
 
 		//log.Println("dump data:\n", hex.Dump(buff[buffUsed: buffUsed+uint16(len)]))
 
@@ -91,7 +92,7 @@ func proxyHandleConn(client net.Conn) {
 }
 
 func socketProxy() {
-
+	return
 	listen_address := ":8095"
 	logPath := "./detector_server.log"
 
@@ -118,12 +119,112 @@ func socketProxy() {
 			return
 		}
 		fmt.Println("accept new connection")
-		go proxyHandleConn(conn);
+		go proxyHandleConn(conn)
 
 	}
 	//go proxyHandleConn(conn)
 }
 
+//----------------------------------------------
+//自定义数据模式，Header+Frame
+type LogReader struct {
+	conn   net.Conn
+	reader *bufio.Reader
+	buffer [4]byte
+}
+
+func NewLogReader(c net.Conn) *LogReader {
+	return &LogReader{
+		conn:   c,
+		reader: bufio.NewReader(c),
+	}
+}
+func (p *LogReader) readHeader() (int32, error) {
+	buf := p.buffer[:4]
+	fmt.Println("==readHeader==")
+
+	if _, err := io.ReadFull(p.reader, buf); err != nil {
+		fmt.Println("readHeader error")
+		return 0, err
+	}
+	size := int32(binary.BigEndian.Uint32(buf))
+	if size < 0 || size > 1638400 {
+		return 0, fmt.Errorf("Incorrect frame size(%d)", size)
+	}
+	fmt.Println("readHeader size:%d", size)
+	return size, nil
+}
+func (p *LogReader) readFrame(size int) ([]byte, error) {
+	var buf []byte
+	if size <= len(p.buffer) {
+		buf = p.buffer[0:size]
+	} else {
+		buf = make([]byte, size)
+	}
+	_, err := io.ReadFull(p.reader, buf)
+	fmt.Println(buf)
+	return buf, err
+}
+
+//数据写入队列
+func forwardMessage(c net.Conn, queue chan<- string) {
+	defer c.Close()
+	logReader := NewLogReader(c)
+	for {
+		size, err := logReader.readHeader()
+		if err != nil {
+			break
+		}
+		data, err := logReader.readFrame(int(size))
+		if err != nil {
+			break
+		}
+		queue <- string(data)
+	}
+}
+
+//从队列中读取数据、定期处理
+func processMsg(q <-chan string) {
+	ticker := time.NewTicker(time.Second * 60)
+
+	for {
+		select {
+		case msg := <-q:
+			fmt.Println(msg)
+		case <-ticker.C:
+			fmt.Println("定时任务")
+
+		}
+	}
+}
+func serverTest() {
+	address := ":8095"
+	listen, err := net.Listen("tcp4", address)
+	if err != nil {
+		return
+	}
+	fmt.Println("server start, listen on", address)
+	defer listen.Close()
+	fmt.Println("server start done...")
+
+	messageQueue := make(chan string, 40960)
+	go processMsg(messageQueue)
+	for {
+		fd, err := listen.Accept()
+		if err != nil {
+
+			continue
+		}
+		fmt.Println("accept new connection")
+		go forwardMessage(fd, messageQueue)
+
+	}
+
+}
+
+//----------------------------------------------
 func main() {
+	serverTest()
+
 	socketProxy()
 }

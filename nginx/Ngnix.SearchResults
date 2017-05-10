@@ -1,0 +1,9 @@
+---- ngx_is_init_cycle Matches (4 in 2 files) ----
+Ngx_cycle.c (src\core):317
+    } else if (!ngx_is_init_cycle(old_cycle)) {
+Ngx_cycle.c (src\core):749
+    if (ngx_process == NGX_PROCESS_MASTER || ngx_is_init_cycle(old_cycle)) {
+Ngx_cycle.c (src\core):801
+    if (!ngx_is_init_cycle(old_cycle)) {
+Ngx_cycle.h (src\core):120
+#define ngx_is_init_cycle(cycle)  (cycle->conf_ctx == NULL)
