@@ -11,6 +11,9 @@ https://github.com/Unknwon/the-way-to-go_ZH_CN
 GO语言学习资源整理
 https://zhuanlan.zhihu.com/p/25493806
 
+基于go+protobuf实现的多种持久化方案的mq框架：kiteq
+http://studygolang.com/articles/4124
+
 --------------消息队列-----------------
 https://github.com/nsqio/nsq.git
 https://github.com/nsqio/nsq/releases
